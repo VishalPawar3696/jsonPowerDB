@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"
+href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script
+src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script
+src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://login2explore.com/jpdb/resources/js/0.0.3/jpdb-commons.js"></script>
+
+    <title>Document</title>
+</head>
+<body>
+  <div class="container">
+    <h2>Vertical (basic) form</h2>
+    <form id="studentForm" method="post">
+    <div class="form-group">
+    <span><label for="Id">Roll No</label> <label id="id">
+    </label></span>
+    <input type="number" class="form-control" name="id" id="id"
+    placeholder="Enter Roll No" required onchange="getStudent()">
+    </div>
+    <div class="form-group">
+    <label for="FullName">Student Full Name:</label>
+    <input type="text" class="form-control" id="name"
+    placeholder="Enter Student full Name" name="name">
+    </div>
+    <div class="form-group">
+    <label for="class">Class:</label>
+    <input type="number" class="form-control" id="class"
+    placeholder="Enter  class" name="class">
+    </div>
+    <div class="form-group">
+      <label for="Birth-Date">Birth-Date:</label>
+      <input type="text" class="form-control" id="Birth-Date"
+      placeholder="Enter Bitrth-Date" name="Birth-Date">
+      </div>
+      <div class="form-group">
+        <label for="address">Adress:</label>
+        <input type="text" class="form-control" id="address"
+        placeholder="Enter Address" name="Address">
+        </div>
+        <div class="form-group">
+          <label for="class">Deadline:</label>
+          <input type="text" class="form-control" id="Deadline"
+          placeholder="Enter Deadline" name="deadline">
+          </div>
+          <input type="button" class="btn btn-primary" id="empSave" value="Save"
+          onclick="saveData();">
+    <input type="button" class="btn btn-primary" id="changeData" value="Change" disabled
+    onclick="changeData()">
+    <input type="button" class="btn btn-primary" id="resetForm" value="Reset" disabled
+    onclick="resetForm()">
+    </form>
+    </div>
+    
+</body>
+<script>
+  $("#id").focus();
+
+  function saveRec(jsonObj){
+    var lvData=JSON.parse(jsonObj.data);
+    localStorage.setItem("recno",lvData.rec_no);
+  }
+
+  function getStudentIdAsJsonObj(){
+    var id=$("#id").val();
+    var jsonStr={
+      id:id
+    };
+    return JSON.stringify(jsonStr);
+  }
+  
+
+function fillData(jsonObj){
+  saveRec(jsonObj);
+  var data=JSON.parse(jsonObj.data).record;
+  $("#name").val(data.name);
+  $("#class").val(data.class);
+  $("#Birth-Data").val(data.BirthDate);
+  $("#address").val(data.address);
+  $("#Deadline").val(data.Deadline);
+
+}
+
+//save data
+
+function saveData() {
+    console.log("save");
+    var jsonStr = validateAndGetFormData();
+    if (jsonStr === "") {
+    return;
+    }
+    var putReqStr = createPUTRequest("90933243|-31949278353765251|90950859",
+    jsonStr, "Student1", "Student1-REL");
+    alert(putReqStr);
+    jQuery.ajaxSetup({async: false});
+    var resultObj = executeCommand(putReqStr,
+    "http://api.login2explore.com:5577", "/api/iml");
+    alert(JSON.stringify(resultObj));
+    jQuery.ajaxSetup({async: true});
+    resetForm();
+    }
+
+
+    //validateData
+
+    function validateAndGetFormData(){
+        var id,name,Class,BirthDate,address,Deadline;
+       id= $("#id").val("");
+       name= $("#name").val("");
+       Class= $("#class").val("");
+       BirthDate= $("#Birth-Date").val("");
+       address= $("#address").val("");
+       Deadline= $("#Deadline").val("");
+
+       if(id==-''){
+        alert("Id is missing");
+        $("#id").focus();
+        return "";
+       }
+
+       if(name===''){
+        alert("Name is Missing");
+        $("#name").focus();
+        return "";
+       }
+       if(Class===''){
+        alert("class is Missing");
+        $("#class").focus();
+        return "";
+       }
+        if(BirthDate===''){
+            alert("BirthDate is Missing");
+            $("#Birth-Date").focus();
+            return "";
+           
+       }
+       if(address===''){
+        alert("addressis Missing");
+        $("#address").focus();
+        return "";
+       
+   }
+   if(Deadline===''){
+    alert("deadline is Missing");
+    $("#Deadline").focus();
+    return "";
+   
+}
+var jsonStrobj={
+    id:id,
+    name:name,
+    class:Class,
+    BirthDate:BirthDate,
+    address:address,
+    Deadline:Deadline,
+
+
+};
+return JSON.stringify(jsonStrobj);
+    }
+
+
+    //changeData
+    function changeData(){
+        // $("#changeData").prop("disabled",true);
+        jsonChg=validateAndGetFormData();
+        var updateRequest=createUPDATERecordRequest("90933243|-31949278353765251|90950859",jsonChg,"Student1", "Student1-REL",localStorage.getItem('recno'));
+        jQuery.ajaxSetup({async:false});
+        var resJsonObj=executeCommandAtGivenBaseUrl(updateRequest, "http://api.login2explore.com:5577", "/api/iml");
+        jQuery.ajaxSetup({async:true});
+        console.log(resJsonObj);
+        resetForm();
+        $("#id").focus();
+    }
+
+    //get student
+
+    function getStudent(){
+        var studentIdJsonObj=getStudentIdAsJsonObj();
+        var getRequest=createGET_BY_KEYRequest("90933243|-31949278353765251|90950859","Student1","Student1-REL",studentIdJsonObj);
+        jQuery.ajaxSetup({async:false});
+        var resJsonObj=executeCommandAtGivenBaseUrl(getRequest, "http://api.login2explore.com:5577", "/api/iml");
+        jQuery.ajaxSetup({async:true});
+
+        if(resJsonObj.status===400){
+            $("#saveData").prop('disabled',false);
+            $("resetForm").prop('disabled',false);
+            $("#name").focus();
+        }else if(resJsonObj.status===200){
+            $("$id").prop('disabled',true);
+            fillData(resJsonObj);
+
+            $("#changeData").prop('disabled',false);
+            $("resetForm").prop('disabled',false);
+            $("#name").focus();
+        }
+    }
+
+//reset form 
+
+function resetForm(){
+    $("#id").val("");
+    $("#name").val("");
+    $("#class").val("");
+    $("#Birth-Date").val("");
+    $("#address").val("");
+    $("#Deadline").val("");
+    $("#id").prop('disabled',false);
+    $("#saveData").prop('disabled',true);
+    $("#changeData").prop('disabled',true);
+    $("#resetForm").prop('disabled',true);
+    $("#id").focus();
+
+}
+</script>
+</html>
